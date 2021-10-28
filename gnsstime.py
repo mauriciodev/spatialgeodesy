@@ -2,6 +2,9 @@ import erfa
 import numpy as np
 from datetime import datetime
 
+def getMJD(t):
+    return getJulianDay(t)- 2400000.5
+
 def getJulianDay(t):
     aux=erfa.cal2jd(getYear(t),getMonth(t),getDay(t))
     return aux[0]+aux[1]
@@ -21,9 +24,12 @@ def getSecsOfDay(t):
 def getDayOfWeek(t):
     gps_t0=np.datetime64('1980-01-06T00:00:00')
     return ((t - gps_t0)/ np.timedelta64(1, 'D') % 7).astype(np.int64)
+
 def getSecsOfWeek(t):
-    secsOfDay=getSecsOfDay(t)
-    dayOfWeek=getDayOfWeek(t)
+    day=t.astype('datetime64[D]')
+    secsOfDay=(t-day)/ np.timedelta64(1, 's')
+    gps_t0=np.datetime64('1980-01-06T00:00:00')
+    dayOfWeek=((t - gps_t0)/ np.timedelta64(1, 'D') % 7).astype(np.int64)
     return secsOfDay+dayOfWeek*24*60*60
 
 def getYear(t):
