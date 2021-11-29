@@ -4,6 +4,7 @@ class ellipsoid:
   def __init__(self,a=0,denf=0):
     self.a=a
     self.denf=denf
+    self.setGRS80()
   def setGRS80(self):
     self.a=6378137
     self.denf=298.2572221
