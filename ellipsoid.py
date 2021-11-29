@@ -28,8 +28,8 @@ class ellipsoid:
     e=self.e
     M=a*(1-e**2)/(1-e**2 *np.sin(lat)*np.sin(lat))**1.5
     return M
-  def xyz2latlon(self,xyz):
-    xyz=np.array(inputXYZ)
+  def xyz2lonlath(self,xyz):
+    xyz=np.array(xyz)
     lon=np.arctan(xyz[1]/xyz[0]);
     p=np.sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
     e=self.e();
@@ -40,7 +40,7 @@ class ellipsoid:
     N0=a/np.sqrt(1-e*e*np.sin(lat)*np.sin(lat));
     h=p/np.cos(lat)-N0;
     return np.array([lon*180/np.pi,lat*180/np.pi, h])
-  def xyz2latlonIter(self, xyz):
+  def xyz2lonlathIter(self, xyz):
     lon=np.arctan(xyz[1]/xyz[0]);
     p=np.sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
     e=self.e();
@@ -53,12 +53,12 @@ class ellipsoid:
       error=abs(lat1-lat0);
       lat0=lat1;
     return np.array([lon*180/np.pi,lat*180/np.pi, h])
-  def latlon2xyz(self,lon,lat,h):
+  def lonlath2xyz(self,lonlath):
     e=self.e();
-    N=self.N(lat);
-    x=(N+h)*np.cos(lat)*np.cos(lon);
-    y=(N+h)*np.cos(lat)*np.sin(lon);
-    z=(N*(1-e*e)+h)*np.sin(lat);
+    N=self.N(lonlath[1]);
+    x=(N+lonlath[0])*np.cos(lonlath[1])*np.cos(lonlath[0]);
+    y=(N+lonlath[0])*np.cos(lonlath[1])*np.sin(lonlath[0]);
+    z=(N*(1-e*e)+lonlath[0])*np.sin(lonlath[1]);
     return np.array([x,y,z])
 
 if __name__=="__main__":
