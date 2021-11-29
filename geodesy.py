@@ -3,7 +3,7 @@ try:
 except:
     from ellipsoid import ellipsoid
 
-    
+import numpy as np
 
 def dms2dd(d,m,s):
     if d<0: sign=-1
