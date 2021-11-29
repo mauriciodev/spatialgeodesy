@@ -1,3 +1,5 @@
+import numpy as np
+
 class ellipsoid:
   def __init__(self,a=0,denf=0):
     self.a=a
