@@ -1,5 +1,7 @@
-import requests
-from gnsstime import *
+try:
+    from spatialgeodesy.gnsstime import *
+except:
+    from gnsstime import *
 import os
 from zipfile import ZipFile
 import urllib.request
@@ -13,19 +15,23 @@ class gnssdownloader:
             self.datafolder=self.datafolder=os.path.join(os.getcwd(),'gnssdata')
         else:
             self.datafolder=os.path.join(folder,'gnssdata')
-        self.checkDataFolder()
-    def checkDataFolder(self):
-        if not os.path.exists(self.datafolder):
-            os.makedirs(self.datafolder)
+        self.checkFolder(self.datafolder)
+
+    def checkFolder(self, folder):
+        if not os.path.exists(folder):
+            os.makedirs(folder)
     def getBRDC(self,t):
         doy=getDayOfYear(t)
         year=np.datetime64(t,'Y')#t.astype('datetime64[Y]')
         baseurl="https://igs.bkg.bund.de/root_ftp/IGS/BRDC/{0}/{1:03}/BRDM00DLR_S_{0}{1:03}0000_01D_MN.rnx.gz".format(str(year),doy)
         local_filename = baseurl.split('/')[-1]
         print("Downloading from BKG ", baseurl)
-        response = requests.get(baseurl)
-        open(local_filename, 'wb').write(response.content)
-        print("Saved ",local_filename)
+        self.brdcfolder=os.path.join(self.datafolder,"BRDC")
+        self.checkFolder(self.brdcfolder)
+        file_name=os.path.join(self.brdcfolder,local_filename)
+        if not os.path.exists(file_name):
+            urllib.request.urlretrieve(baseurl, file_name)
+        print("Saved ",local_filename)        
         return local_filename
 
 
@@ -35,8 +41,11 @@ class gnssdownloader:
         baseurl="https://igs.bkg.bund.de/root_ftp/IGS/products/orbits/{0}/cod{0:04}{1}.eph_r.Z".format(gpsWeek,dayOfWeek)
         local_filename = baseurl.split('/')[-1]
         print("Downloading from BKG ", baseurl)
-        response = requests.get(baseurl)
-        open(local_filename, 'wb').write(response.content)
+        self.sp3folder=os.path.join(self.datafolder,"SP3")
+        self.checkFolder(self.sp3folder)
+        file_name=os.path.join(self.sp3folder,local_filename)
+        if not os.path.exists(file_name):
+            urllib.request.urlretrieve(baseurl, file_name)
         print("Saved ",local_filename)
         return local_filename
 
@@ -51,8 +60,8 @@ class gnssdownloader:
             baseurl="https://geoftp.ibge.gov.br/informacoes_sobre_posicionamento_geodesico/rbmc/dados/{0}/{1:03}/{2}{1}1.zip".format(str(year),doy,station.lower() )
         local_filename = baseurl.split('/')[-1]
         print("Downloading from IBGE ", baseurl)
-        response = requests.get(baseurl)
-        open(local_filename, 'wb').write(response.content)
+        if not os.path.exists(local_filename):
+            urllib.request.urlretrieve(baseurl, local_filename)
         print("Saved ",local_filename)
         print("Unzipping")
         with ZipFile(local_filename, 'r') as zipObj:
