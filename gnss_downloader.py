@@ -31,8 +31,8 @@ class gnssdownloader:
         file_name=os.path.join(self.brdcfolder,local_filename)
         if not os.path.exists(file_name):
             urllib.request.urlretrieve(baseurl, file_name)
-        print("Saved ",local_filename)        
-        return local_filename
+        print("Saved ",file_name)        
+        return file_name
 
 
     def getSP3(self,t):
@@ -47,7 +47,7 @@ class gnssdownloader:
         if not os.path.exists(file_name):
             urllib.request.urlretrieve(baseurl, file_name)
         print("Saved ",local_filename)
-        return local_filename
+        return file_name
 
     #precise_orbits_url="https://igs.bkg.bund.de/root_ftp/IGS/products/orbits/{0}/cod{0:04}{1}.eph_r.Z".format(gpsWeek,dayOfWeek)
 
