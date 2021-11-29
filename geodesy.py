@@ -1,4 +1,8 @@
-from ellipsoid import ellipsoid
+try:
+    from spatialgeodesy.ellipsoid import ellipsoid
+except:
+    from ellipsoid import ellipsoid
+
     
 
 def dms2dd(d,m,s):
