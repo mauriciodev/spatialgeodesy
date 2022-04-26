@@ -2,8 +2,9 @@ try:
     from spatialgeodesy.gnsstime import *
 except:
     from gnsstime import *
-import os
+import os, io
 from zipfile import ZipFile
+import gzip
 import urllib.request
 from io import StringIO
 import pandas as pd
@@ -93,7 +94,20 @@ class gnssdownloader:
         itrfdf=pd.read_csv(sio,delim_whitespace=True)
         return itrfdf
 
-        
+    def downloadBias(self,doy,year):
+        baseurl="ftp://igs.ign.fr/pub/igs/products/mgex/dcb/{year}/CAS0MGXRAP_{year}{0:03}0000_01D_01D_DCB.BSX.gz".format(doy,year=year)
+        local_filename = baseurl.split('/')[-1]
+        if not os.path.exists(local_filename):
+            print("Downloading ", baseurl)
+            urllib.request.urlretrieve(baseurl, local_filename)
+            print("Saved ",local_filename)
+            #gunzip $local_filename -f
+        with gzip.open(local_filename, 'rt') as f:
+            lines=f.read()
+        lines=' '+re.search('\*BIAS(.+)\n-BIAS', lines, flags=re.DOTALL).group(0)[1:-5]
+        data = io.StringIO(lines)
+        df=pd.read_fwf(data, infer_nrows=1)
+        return df
 
 
 if __name__=="__main__":
@@ -103,4 +117,6 @@ if __name__=="__main__":
     fname=gd.getSP3(epoch)
     fname=gd.getRBMC(epoch,"RJNI",2)
     df=gd.getITRF_df()
+    print(df)
+    df=gd.downloadBias(107,2020)
     print(df)
