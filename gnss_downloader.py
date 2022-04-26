@@ -72,10 +72,12 @@ class gnssdownloader:
         return files
     
     def getITRF_df(self):
-        url="https://itrf.ign.fr/doc_ITRF/Transfo-ITRF2014_ITRFs.txt"
-        file_name=os.path.join(self.datafolder,"itrf.txt")
+        baseurl="https://itrf.ign.fr/docs/solutions/itrf2020/Transfo-ITRF2020_TRFs.txt"
+        print("Downloading from IGN ", baseurl)
+        local_filename = baseurl.split('/')[-1]
+        file_name=os.path.join(self.datafolder,local_filename)
         if not os.path.exists(file_name):
-            urllib.request.urlretrieve(url, file_name)
+            urllib.request.urlretrieve(baseurl, file_name)
         itrfFile=open(file_name)
         itrfData = itrfFile.readlines()
         itrfFile.close()
