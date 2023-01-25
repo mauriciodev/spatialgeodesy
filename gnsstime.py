@@ -52,6 +52,10 @@ def getYear(t):
 def getMonth(t):
     return int(t.astype('datetime64[M]').astype(int)%12+1)
 
+def getMonthFromDoy(year,doy):
+  weird_date=np.datetime64(year, 'Y')+np.timedelta64(doy,'D')
+  return  int(weird_date.astype('datetime64[M]').astype(int)%12+1)
+
 def getDay(t):
     return int((t - t.astype('datetime64[M]'))/ np.timedelta64(1, 'D')) + 1
 
