@@ -9,11 +9,12 @@ import urllib.request
 from io import StringIO
 import pandas as pd
 import re
+import subprocess
 
 class gnssdownloader:
     def __init__(self,folder=''):
         if folder=='':
-            self.datafolder=self.datafolder=os.path.join(os.getcwd(),'gnssdata')
+            self.datafolder=os.path.join(os.getcwd(),'gnssdata')
         else:
             self.datafolder=os.path.join(folder,'gnssdata')
         self.checkFolder(self.datafolder)
@@ -94,29 +95,63 @@ class gnssdownloader:
         itrfdf=pd.read_csv(sio,delim_whitespace=True)
         return itrfdf
 
-    def downloadBias(self,doy,year):
+    def downloadBias(self,doy,year,outdir='.'):
         baseurl="ftp://igs.ign.fr/pub/igs/products/mgex/dcb/{year}/CAS0MGXRAP_{year}{0:03}0000_01D_01D_DCB.BSX.gz".format(doy,year=year)
+        #wget -r "ftps://gdc.cddis.eosdis.nasa.gov/gnss/products/bias/2014/"
+        #baseurl="ftps://gdc.cddis.eosdis.nasa.gov/gnss/products/bias/{year}/CAS0MGXRAP_{year}{0:03}0000_01D_01D_DCB.BSX.gz".format(doy,year=year)
+        #print(baseurl)
         local_filename = baseurl.split('/')[-1]
+        local_filename=os.path.join(outdir,local_filename)
+        
         if not os.path.exists(local_filename):
             print("Downloading ", baseurl)
             urllib.request.urlretrieve(baseurl, local_filename)
+            #subprocess.run(f'wget \"{baseurl}\" -O {local_filename}',shell=True)
             print("Saved ",local_filename)
             #gunzip $local_filename -f
         with gzip.open(local_filename, 'rt') as f:
             lines=f.read()
+        if lines=='':
+            return None
         lines=' '+re.search('\*BIAS(.+)\n-BIAS', lines, flags=re.DOTALL).group(0)[1:-5]
         data = io.StringIO(lines)
         df=pd.read_fwf(data, infer_nrows=1)
         return df
 
+    def getSSN(self):
+        ssndf=pd.read_json("https://services.swpc.noaa.gov/json/solar-cycle/observed-solar-cycle-indices.json")
+        return ssndf
+        
 
 if __name__=="__main__":
     gd=gnssdownloader()
-    epoch=np.datetime64('2021-08-30T23:45:00') 
-    gd.getBRDC(epoch)
-    fname=gd.getSP3(epoch)
-    fname=gd.getRBMC(epoch,"RJNI",2)
-    df=gd.getITRF_df()
-    print(df)
-    df=gd.downloadBias(107,2020)
-    print(df)
+    #epoch=np.datetime64('2021-08-30T23:45:00') 
+    #gd.getBRDC(epoch)
+    #fname=gd.getSP3(epoch)
+    #fname=gd.getRBMC(epoch,"RJNI",2)
+    #df=gd.getITRF_df()
+    #print(df)
+    for year in range(2013,2020):
+        for doy in range(1,365, 50):
+            outdir='dcb' 
+            #outdir='dcb' 
+            station='BRAZ'
+            df=gd.downloadBias(doy,year, outdir=outdir)
+            try:
+                pass
+            except:
+                print(f"Day {doy} year {year} not found.")
+                continue
+            if not df is None:
+                if "SITE" in df.columns:
+                    station_row=df[(df["SITE"]==station)]
+                elif "STATION__" in df.columns:
+                    station_row=df[(df["STATION__"]==station)]
+                if len(station_row)>0:
+                    #print(station_row)
+                    print(f"Found {station} in {doy}/{year} {outdir}")
+                    biasdf=station_row[(station_row["OBS1"]=="C1C") & (station_row["OBS2"]=="C2W")]
+                    biasdf2=station_row[(station_row["OBS1"]=="C2W") & (station_row["OBS2"]=="C2X")]
+                    if len(biasdf)>0 and len(biasdf2)>0:
+                        print("found DCB")
+    #print(df)
